@@ -52,8 +52,11 @@ const mimeOrDefault = (path) => {
 exports.mimeOrDefault = mimeOrDefault;
 const upload = async (config, github, url, path, currentAssets) => {
     const [owner, repo] = config.github_repository.split('/');
+    core.debug(`owner = ${owner}, repo = ${repo}`);
     const { name, size, mime, data: body } = (0, exports.asset)(path);
+    core.debug(`name = ${name}, size = ${size}, mime = ${mime}, body = ${body}`);
     const currentAsset = currentAssets.find(({ name: currentName }) => currentName === name);
+    core.debug(`currentAsset = ${currentAsset}`);
     if (currentAsset) {
         core.info(`Deleting previously uploaded asset ${name}...`);
         await github.rest.repos.deleteReleaseAsset({
@@ -65,12 +68,14 @@ const upload = async (config, github, url, path, currentAssets) => {
     core.info(`Uploading ${name}...`);
     const endpoint = new URL(url);
     endpoint.searchParams.append('name', name);
+    core.debug(`endpoint = ${endpoint}`);
     const client = new httpClient.HttpClient();
     const resp = await client.post(endpoint.toString(), body.toString(), {
         'Content-Length': `${size}`,
         'Content-Type': mime,
         Authorization: `token ${config.github_token}`
     });
+    core.debug(`resp = ${resp}`);
     return resp.readBody();
 };
 exports.upload = upload;
@@ -79,19 +84,25 @@ const release = async (config, github, maxRetries = 3) => {
         throw new Error('Too many retries.');
     }
     const [owner, repo] = config.github_repository.split('/');
+    core.debug(`owner = ${owner}, repo = ${repo}`);
     const tag = config.input_tag_name ||
         ((0, util_1.isTag)(config.github_ref)
             ? config.github_ref.replace('refs/tags/', '')
             : '');
+    core.debug(`tag = ${tag}`);
     const discussion_category_name = config.input_discussion_category_name;
+    core.debug(`discussion_category_name = ${discussion_category_name}`);
     const generate_release_notes = config.input_generate_release_notes;
+    core.debug(`generate_release_notes = ${generate_release_notes}`);
     try {
         const existingRelease = await github.rest.repos.getReleaseByTag({
             owner,
             repo,
             tag
         });
+        core.debug(`existingRelease = ${existingRelease}`);
         const release_id = existingRelease.data.id;
+        core.debug(`release_id = ${release_id}`);
         let target_commitish;
         if (config.input_target_commitish &&
             config.input_target_commitish !== existingRelease.data.target_commitish) {
@@ -101,6 +112,7 @@ const release = async (config, github, maxRetries = 3) => {
         else {
             target_commitish = existingRelease.data.target_commitish;
         }
+        core.debug(`target_commitish = ${target_commitish}`);
         const tag_name = tag;
         const name = config.input_name || existingRelease.data.name || tag;
         // revisit: support a new body-concat-strategy input for accumulating
@@ -116,12 +128,15 @@ const release = async (config, github, maxRetries = 3) => {
         else {
             body = workflowBody || existingReleaseBody;
         }
+        core.debug(`body = ${body}`);
         const draft = config.input_draft !== undefined
             ? config.input_draft
             : existingRelease.data.draft;
         const prerelease = config.input_prerelease !== undefined
             ? config.input_prerelease
             : existingRelease.data.prerelease;
+        core.debug(`draft = ${draft}`);
+        core.debug(`prerelease = ${prerelease}`);
         const rel = await github.rest.repos.updateRelease({
             owner,
             repo,
@@ -135,10 +150,12 @@ const release = async (config, github, maxRetries = 3) => {
             discussion_category_name,
             generate_release_notes
         });
+        core.debug(`rel = ${rel}`);
         return rel.data;
     }
     catch (error) {
         if (error.status === 404) {
+            core.debug(`not found`);
             const tag_name = tag;
             const name = config.input_name || tag;
             const body = (0, util_1.releaseBody)(config);
@@ -163,6 +180,7 @@ const release = async (config, github, maxRetries = 3) => {
                     discussion_category_name,
                     generate_release_notes
                 });
+                core.debug(`rel = ${rel}`);
                 return rel.data;
             }
             catch (error2) {
@@ -217,6 +235,7 @@ const core = __importStar(__nccwpck_require__(2186));
 async function run() {
     try {
         const config = (0, util_1.parseConfig)(process.env);
+        core.debug(`config = ${config}`);
         if (!config.input_tag_name &&
             !(0, util_1.isTag)(config.github_ref) &&
             !config.input_draft) {
@@ -224,6 +243,7 @@ async function run() {
         }
         if (config.input_files) {
             const patterns = (0, util_1.unmatchedPatterns)(config.input_files);
+            core.debug(`patterns = ${patterns}`);
             for (const pattern of patterns) {
                 core.warning(`Pattern '${pattern}' does not match any files.`);
             }
@@ -246,15 +266,19 @@ async function run() {
             }
         });
         const rel = await (0, github_1.release)(config, gh);
+        core.debug(`rel = ${rel}`);
         if (config.input_files && config.input_files.length > 0) {
             const files = (0, util_1.paths)(config.input_files);
+            core.debug(`files = ${files}`);
             if (files.length === 0) {
                 core.warning(`${config.input_files} not include valid file.`);
             }
             const currentAssets = rel.assets;
+            core.debug(`currentAssets = ${currentAssets}`);
             const assets = await Promise.all(files.map(async (path) => {
                 return await (0, github_1.upload)(config, gh, (0, util_1.uploadUrl)(rel.upload_url), path, currentAssets);
             }));
+            core.debug(`assets = ${assets}`);
             core.setOutput('assets', assets);
         }
         core.info(`Release ready at ${rel.html_url}`);

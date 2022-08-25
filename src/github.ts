@@ -49,10 +49,16 @@ export const upload = async (
   currentAssets: {id: number; name: string}[]
 ): Promise<string> => {
   const [owner, repo] = config.github_repository.split('/')
+  core.debug(`owner = ${owner}, repo = ${repo}`)
+
   const {name, size, mime, data: body} = asset(path)
+  core.debug(`name = ${name}, size = ${size}, mime = ${mime}, body = ${body}`)
+
   const currentAsset = currentAssets.find(
     ({name: currentName}) => currentName === name
   )
+  core.debug(`currentAsset = ${currentAsset}`)
+
   if (currentAsset) {
     core.info(`Deleting previously uploaded asset ${name}...`)
     await github.rest.repos.deleteReleaseAsset({
@@ -61,15 +67,19 @@ export const upload = async (
       repo
     })
   }
+
   core.info(`Uploading ${name}...`)
   const endpoint = new URL(url)
   endpoint.searchParams.append('name', name)
+  core.debug(`endpoint = ${endpoint}`)
+
   const client = new httpClient.HttpClient()
   const resp = await client.post(endpoint.toString(), body.toString(), {
     'Content-Length': `${size}`,
     'Content-Type': mime,
     Authorization: `token ${config.github_token}`
   })
+  core.debug(`resp = ${resp}`)
 
   return resp.readBody()
 }
@@ -84,14 +94,20 @@ export const release = async (
   }
 
   const [owner, repo] = config.github_repository.split('/')
+  core.debug(`owner = ${owner}, repo = ${repo}`)
+
   const tag =
     config.input_tag_name ||
     (isTag(config.github_ref)
       ? config.github_ref.replace('refs/tags/', '')
       : '')
+  core.debug(`tag = ${tag}`)
 
   const discussion_category_name = config.input_discussion_category_name
+  core.debug(`discussion_category_name = ${discussion_category_name}`)
+
   const generate_release_notes = config.input_generate_release_notes
+  core.debug(`generate_release_notes = ${generate_release_notes}`)
 
   try {
     const existingRelease = await github.rest.repos.getReleaseByTag({
@@ -99,8 +115,11 @@ export const release = async (
       repo,
       tag
     })
+    core.debug(`existingRelease = ${existingRelease}`)
 
     const release_id = existingRelease.data.id
+    core.debug(`release_id = ${release_id}`)
+
     let target_commitish: string
     if (
       config.input_target_commitish &&
@@ -113,6 +132,7 @@ export const release = async (
     } else {
       target_commitish = existingRelease.data.target_commitish
     }
+    core.debug(`target_commitish = ${target_commitish}`)
 
     const tag_name = tag
     const name = config.input_name || existingRelease.data.name || tag
@@ -122,12 +142,14 @@ export const release = async (
     // no one wants
     const workflowBody = releaseBody(config) || ''
     const existingReleaseBody = existingRelease.data.body || ''
+
     let body: string
     if (config.input_append_body && workflowBody && existingReleaseBody) {
       body = `${existingReleaseBody}\n${workflowBody}`
     } else {
       body = workflowBody || existingReleaseBody
     }
+    core.debug(`body = ${body}`)
 
     const draft =
       config.input_draft !== undefined
@@ -137,6 +159,8 @@ export const release = async (
       config.input_prerelease !== undefined
         ? config.input_prerelease
         : existingRelease.data.prerelease
+    core.debug(`draft = ${draft}`)
+    core.debug(`prerelease = ${prerelease}`)
 
     const rel = await github.rest.repos.updateRelease({
       owner,
@@ -151,9 +175,12 @@ export const release = async (
       discussion_category_name,
       generate_release_notes
     })
+    core.debug(`rel = ${rel}`)
     return rel.data
   } catch (error: any) {
     if (error.status === 404) {
+      core.debug(`not found`)
+
       const tag_name = tag
       const name = config.input_name || tag
       const body = releaseBody(config)
@@ -164,6 +191,7 @@ export const release = async (
       if (target_commitish) {
         commitMessage = ` using commit '${target_commitish}'`
       }
+
       core.info(
         `Creating new GitHub release for tag ${tag_name}${commitMessage}...`
       )
@@ -180,6 +208,7 @@ export const release = async (
           discussion_category_name,
           generate_release_notes
         })
+        core.debug(`rel = ${rel}`)
         return rel.data
       } catch (error2: any) {
         // presume a race with competing matrix runs

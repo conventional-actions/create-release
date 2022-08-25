@@ -6,6 +6,8 @@ import * as core from '@actions/core'
 async function run(): Promise<void> {
   try {
     const config = parseConfig(process.env)
+    core.debug(`config = ${config}`)
+
     if (
       !config.input_tag_name &&
       !isTag(config.github_ref) &&
@@ -16,6 +18,7 @@ async function run(): Promise<void> {
 
     if (config.input_files) {
       const patterns = unmatchedPatterns(config.input_files)
+      core.debug(`patterns = ${patterns}`)
 
       for (const pattern of patterns) {
         core.warning(`Pattern '${pattern}' does not match any files.`)
@@ -46,13 +49,19 @@ async function run(): Promise<void> {
     })
 
     const rel = await release(config, gh)
+    core.debug(`rel = ${rel}`)
+
     if (config.input_files && config.input_files.length > 0) {
       const files = paths(config.input_files)
+      core.debug(`files = ${files}`)
+
       if (files.length === 0) {
         core.warning(`${config.input_files} not include valid file.`)
       }
 
       const currentAssets = rel.assets
+      core.debug(`currentAssets = ${currentAssets}`)
+
       const assets = await Promise.all(
         files.map(async path => {
           return await upload(
@@ -64,6 +73,7 @@ async function run(): Promise<void> {
           )
         })
       )
+      core.debug(`assets = ${assets}`)
 
       core.setOutput('assets', assets)
     }
