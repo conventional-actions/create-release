@@ -16,4 +16,4 @@ jobs:
       - name: Create release
         uses: ./
         with:
-          tag_name: ${{steps.version.version}}
+          tag_name: ${{steps.version.outputs.version}}
