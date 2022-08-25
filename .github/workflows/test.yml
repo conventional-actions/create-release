@@ -18,11 +18,3 @@ jobs:
           cache: npm
       - run: npm install
       - run: npm run all
-
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: ./
-        with:
-          milliseconds: 1000

@@ -12,20 +12,24 @@ inputs:
     description: "Gives the release a custom name. Defaults to tag name"
     required: false
   tag_name:
-    description: "Gives a tag name. Defaults to github.GITHUB_REF"
+    description: "Gives a tag name. Defaults to github.ref"
     required: false
+    default: ${{ github.ref }}
   draft:
     description: "Creates a draft release. Defaults to false"
     required: false
+    default: 'false'
   prerelease:
     description: "Identify the release as a prerelease. Defaults to false"
     required: false
+    default: 'false'
   files:
     description: "Newline-delimited list of path globs for asset files to upload"
     required: false
   fail_on_unmatched_files:
     description: "Fails if any of the `files` globs match nothing. Defaults to false"
     required: false
+    default: 'false'
   repository:
     description: "Repository to make releases against, in <owner>/<repo> format"
     required: false
@@ -42,9 +46,11 @@ inputs:
   generate_release_notes:
     description: "Whether to automatically generate the name and body for this release. If name is specified, the specified name will be used; otherwise, a name will be automatically generated. If body is specified, the body will be pre-pended to the automatically generated notes."
     required: false
+    default: 'true'
   append_body:
     description: "Append to existing body instead of overwriting it. Default is false."
     required: false
+    default: 'false'
 outputs:
   url:
     description: "URL to the Release HTML Page"
