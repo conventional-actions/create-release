@@ -10,6 +10,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
       - id: version
         name: Determine next version
         uses: conventional-actions/next-version@v1
@@ -17,3 +19,10 @@ jobs:
         uses: ./
         with:
           tag_name: ${{steps.version.outputs.version}}
+      - name: Create major release
+        uses: ./
+        with:
+          tag_name: ${{steps.version.outputs.version-major}}
+
+permissions:
+  contents: write
