@@ -6,7 +6,7 @@ import * as core from '@actions/core'
 async function run(): Promise<void> {
   try {
     const config = parseConfig(process.env)
-    core.debug(`config = ${config}`)
+    core.debug(`config = ${JSON.stringify(config)}`)
 
     if (
       !config.input_tag_name &&
@@ -49,7 +49,7 @@ async function run(): Promise<void> {
     })
 
     const rel = await release(config, gh)
-    core.debug(`rel = ${rel}`)
+    core.debug(`rel = ${JSON.stringify(rel)}`)
 
     if (config.input_files && config.input_files.length > 0) {
       const files = paths(config.input_files)

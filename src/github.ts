@@ -115,7 +115,7 @@ export const release = async (
       repo,
       tag
     })
-    core.debug(`existingRelease = ${existingRelease}`)
+    core.debug(`existingRelease = ${JSON.stringify(existingRelease)}`)
 
     const release_id = existingRelease.data.id
     core.debug(`release_id = ${release_id}`)
@@ -175,7 +175,7 @@ export const release = async (
       discussion_category_name,
       generate_release_notes
     })
-    core.debug(`rel = ${rel}`)
+    core.debug(`rel = ${JSON.stringify(rel)}`)
     return rel.data
   } catch (error: any) {
     if (error.status === 404) {
@@ -208,7 +208,7 @@ export const release = async (
           discussion_category_name,
           generate_release_notes
         })
-        core.debug(`rel = ${rel}`)
+        core.debug(`rel = ${JSON.stringify(rel)}`)
         return rel.data
       } catch (error2: any) {
         // presume a race with competing matrix runs

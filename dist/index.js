@@ -100,7 +100,7 @@ const release = async (config, github, maxRetries = 3) => {
             repo,
             tag
         });
-        core.debug(`existingRelease = ${existingRelease}`);
+        core.debug(`existingRelease = ${JSON.stringify(existingRelease)}`);
         const release_id = existingRelease.data.id;
         core.debug(`release_id = ${release_id}`);
         let target_commitish;
@@ -150,7 +150,7 @@ const release = async (config, github, maxRetries = 3) => {
             discussion_category_name,
             generate_release_notes
         });
-        core.debug(`rel = ${rel}`);
+        core.debug(`rel = ${JSON.stringify(rel)}`);
         return rel.data;
     }
     catch (error) {
@@ -180,7 +180,7 @@ const release = async (config, github, maxRetries = 3) => {
                     discussion_category_name,
                     generate_release_notes
                 });
-                core.debug(`rel = ${rel}`);
+                core.debug(`rel = ${JSON.stringify(rel)}`);
                 return rel.data;
             }
             catch (error2) {
@@ -235,7 +235,7 @@ const core = __importStar(__nccwpck_require__(2186));
 async function run() {
     try {
         const config = (0, util_1.parseConfig)(process.env);
-        core.debug(`config = ${config}`);
+        core.debug(`config = ${JSON.stringify(config)}`);
         if (!config.input_tag_name &&
             !(0, util_1.isTag)(config.github_ref) &&
             !config.input_draft) {
@@ -266,7 +266,7 @@ async function run() {
             }
         });
         const rel = await (0, github_1.release)(config, gh);
-        core.debug(`rel = ${rel}`);
+        core.debug(`rel = ${JSON.stringify(rel)}`);
         if (config.input_files && config.input_files.length > 0) {
             const files = (0, util_1.paths)(config.input_files);
             core.debug(`files = ${files}`);
