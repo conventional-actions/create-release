@@ -1,0 +1,63 @@
+{
+  "name": "create-release",
+  "version": "0.0.0",
+  "private": true,
+  "description": "GitHub Action for creating GitHub Releases",
+  "main": "lib/main.js",
+  "scripts": {
+    "build": "tsc",
+    "format": "prettier --write '**/*.ts'",
+    "format-check": "prettier --check '**/*.ts'",
+    "lint": "eslint src/**/*.ts",
+    "package": "ncc build --source-map --license licenses.txt",
+    "test": "jest",
+    "all": "npm run build && npm run format && npm run lint && npm run package && npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/conventional-actions/create-release.git"
+  },
+  "homepage": "https://github.com/conventional-actions/create-release",
+  "bugs": {
+    "url": "https://github.com/conventional-actions/create-release/issues"
+  },
+  "keywords": [
+    "GitHub",
+    "action",
+    "version",
+    "versions",
+    "create",
+    "relase"
+  ],
+  "author": "Conventional Actions",
+  "license": "MIT",
+  "dependencies": {
+    "@actions/core": "^1.9.1",
+    "@actions/github": "^5.0.3",
+    "@actions/glob": "^0.3.0",
+    "@actions/http-client": "^2.0.1",
+    "@octokit/plugin-retry": "^3.0.9",
+    "@octokit/plugin-throttling": "^4.2.0",
+    "glob": "^8.0.3",
+    "mime": "^3.0.0",
+    "node-fetch": "^3.2.10"
+  },
+  "devDependencies": {
+    "@types/glob": "^7.2.0",
+    "@types/jest": "^28.1.8",
+    "@types/mime": "^3.0.1",
+    "@types/node": "^18.7.13",
+    "@types/node-fetch": "^2.6.2",
+    "@typescript-eslint/parser": "^5.35.1",
+    "@vercel/ncc": "^0.34.0",
+    "eslint": "^8.22.0",
+    "eslint-plugin-github": "^4.3.7",
+    "eslint-plugin-jest": "^26.8.7",
+    "jest": "^28.1.3",
+    "jest-circus": "^28.1.3",
+    "prettier": "^2.7.1",
+    "ts-jest": "^28.0.8",
+    "typescript": "^4.7.4",
+    "typescript-formatter": "^7.2.2"
+  }
+}
