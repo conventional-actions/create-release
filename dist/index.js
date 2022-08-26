@@ -79,10 +79,8 @@ const upload = async (config, github, url, path, currentAssets) => {
     return resp.readBody();
 };
 exports.upload = upload;
-const release = async (config, github, maxRetries = 3) => {
-    if (maxRetries <= 0) {
-        throw new Error('Too many retries.');
-    }
+const release = async (config, github) => {
+    const repos = github.rest.repos;
     const [owner, repo] = config.github_repository.split('/');
     core.debug(`owner = ${owner}, repo = ${repo}`);
     const tag = config.input_tag_name ||
@@ -95,7 +93,7 @@ const release = async (config, github, maxRetries = 3) => {
     const generate_release_notes = config.input_generate_release_notes;
     core.debug(`generate_release_notes = ${generate_release_notes}`);
     try {
-        const existingRelease = await github.rest.repos.getReleaseByTag({
+        const existingRelease = await repos.getReleaseByTag({
             owner,
             repo,
             tag
@@ -104,14 +102,22 @@ const release = async (config, github, maxRetries = 3) => {
         core.debug('Deleting existing release');
         const release_id = existingRelease.data.id;
         core.debug(`existing_release_id = ${release_id}`);
-        await github.rest.repos.deleteRelease({
+        await repos.deleteRelease({
             owner,
             repo,
             release_id
         });
+        core.debug(`deleting ref owner = ${owner}, repo = ${repo}, ref = ${tag}`);
+        await github.rest.git.deleteRef({
+            owner,
+            repo,
+            ref: `tags/${tag}`
+        });
     }
     catch (error) {
-        core.error(`${error.status}\n${JSON.stringify(error.response.data.errors)}`);
+        if (error.status !== 404) {
+            throw error;
+        }
         core.debug('Creating new release');
     }
     const target_commitish = config.input_target_commitish || '';
@@ -129,7 +135,7 @@ const release = async (config, github, maxRetries = 3) => {
         commitMessage = ` using commit '${target_commitish}'`;
     }
     core.info(`Creating new GitHub release for tag ${tag}${commitMessage}...`);
-    const rel = await github.rest.repos.createRelease({
+    const rel = await repos.createRelease({
         owner,
         repo,
         tag_name: tag,

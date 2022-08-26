@@ -86,12 +86,9 @@ export const upload = async (
 
 export const release = async (
   config: Config,
-  github: GitHubT,
-  maxRetries = 3
+  github: GitHubT
 ): Promise<Release> => {
-  if (maxRetries <= 0) {
-    throw new Error('Too many retries.')
-  }
+  const repos = github.rest.repos
 
   const [owner, repo] = config.github_repository.split('/')
   core.debug(`owner = ${owner}, repo = ${repo}`)
@@ -110,7 +107,7 @@ export const release = async (
   core.debug(`generate_release_notes = ${generate_release_notes}`)
 
   try {
-    const existingRelease = await github.rest.repos.getReleaseByTag({
+    const existingRelease = await repos.getReleaseByTag({
       owner,
       repo,
       tag
@@ -122,13 +119,23 @@ export const release = async (
     const release_id = existingRelease.data.id
     core.debug(`existing_release_id = ${release_id}`)
 
-    await github.rest.repos.deleteRelease({
+    await repos.deleteRelease({
       owner,
       repo,
       release_id
     })
+
+    core.debug(`deleting ref owner = ${owner}, repo = ${repo}, ref = ${tag}`)
+    await github.rest.git.deleteRef({
+      owner,
+      repo,
+      ref: `tags/${tag}`
+    })
   } catch (error: any) {
-    core.error(`${error.status}\n${JSON.stringify(error.response.data.errors)}`)
+    if (error.status !== 404) {
+      throw error
+    }
+
     core.debug('Creating new release')
   }
 
@@ -154,7 +161,7 @@ export const release = async (
 
   core.info(`Creating new GitHub release for tag ${tag}${commitMessage}...`)
 
-  const rel = await github.rest.repos.createRelease({
+  const rel = await repos.createRelease({
     owner,
     repo,
     tag_name: tag,
