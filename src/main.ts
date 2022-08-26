@@ -64,7 +64,7 @@ async function run(): Promise<void> {
 
       const assets = await Promise.all(
         files.map(async path => {
-          return await upload(
+          return upload(
             config,
             gh,
             uploadUrl(rel.upload_url),

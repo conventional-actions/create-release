@@ -128,20 +128,26 @@ const release = async (config, github, maxRetries = 3) => {
         commitMessage = ` using commit '${target_commitish}'`;
     }
     core.info(`Creating new GitHub release for tag ${tag}${commitMessage}...`);
-    const rel = await github.rest.repos.createRelease({
-        owner,
-        repo,
-        tag_name: tag,
-        name,
-        body,
-        draft,
-        prerelease,
-        target_commitish,
-        discussion_category_name,
-        generate_release_notes
-    });
-    core.debug(`rel = ${JSON.stringify(rel)}`);
-    return rel.data;
+    try {
+        const rel = await github.rest.repos.createRelease({
+            owner,
+            repo,
+            tag_name: tag,
+            name,
+            body,
+            draft,
+            prerelease,
+            target_commitish,
+            discussion_category_name,
+            generate_release_notes
+        });
+        core.debug(`rel = ${JSON.stringify(rel)}`);
+        return rel.data;
+    }
+    catch (e) {
+        core.error(JSON.stringify(e));
+        throw e;
+    }
 };
 exports.release = release;
 
@@ -225,7 +231,7 @@ async function run() {
             const currentAssets = rel.assets;
             core.debug(`currentAssets = ${currentAssets}`);
             const assets = await Promise.all(files.map(async (path) => {
-                return await (0, github_1.upload)(config, gh, (0, util_1.uploadUrl)(rel.upload_url), path, currentAssets);
+                return (0, github_1.upload)(config, gh, (0, util_1.uploadUrl)(rel.upload_url), path, currentAssets);
             }));
             core.debug(`assets = ${assets}`);
             core.setOutput('assets', assets);
@@ -300,7 +306,7 @@ const parseInputFiles = (files) => {
 exports.parseInputFiles = parseInputFiles;
 const parseConfig = (env) => {
     return {
-        github_token: env.GITHUB_TOKEN || env.INPUT_TOKEN || '',
+        github_token: env.INPUT_TOKEN || env.GITHUB_TOKEN || '',
         github_ref: env.GITHUB_REF || '',
         github_repository: env.INPUT_REPOSITORY || env.GITHUB_REPOSITORY || '',
         input_name: env.INPUT_NAME,

@@ -203,7 +203,7 @@ describe('util', () => {
       )
     })
 
-    it('prefers GITHUB_TOKEN over token input for backwards compatibility', () => {
+    it('prefers token input over GITHUB_TOKEN', () => {
       assert.deepStrictEqual(
         parseConfig({
           INPUT_DRAFT: 'false',
@@ -214,7 +214,7 @@ describe('util', () => {
         {
           github_ref: '',
           github_repository: '',
-          github_token: 'env-token',
+          github_token: 'input-token',
           input_append_body: false,
           input_body: undefined,
           input_body_path: undefined,

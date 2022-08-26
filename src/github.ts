@@ -167,9 +167,10 @@ export const release = async (
       generate_release_notes
     })
     core.debug(`rel = ${JSON.stringify(rel)}`)
-  } catch (e: Error) {
-    core.setFailed(JSON.stringify(e))
-  }
 
-  return rel.data
+    return rel.data
+  } catch (e) {
+    core.error(JSON.stringify(e))
+    throw e
+  }
 }
