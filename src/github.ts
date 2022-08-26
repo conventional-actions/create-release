@@ -153,19 +153,23 @@ export const release = async (
 
   core.info(`Creating new GitHub release for tag ${tag}${commitMessage}...`)
 
-  const rel = await github.rest.repos.createRelease({
-    owner,
-    repo,
-    tag_name: tag,
-    name,
-    body,
-    draft,
-    prerelease,
-    target_commitish,
-    discussion_category_name,
-    generate_release_notes
-  })
-  core.debug(`rel = ${JSON.stringify(rel)}`)
+  try {
+    const rel = await github.rest.repos.createRelease({
+      owner,
+      repo,
+      tag_name: tag,
+      name,
+      body,
+      draft,
+      prerelease,
+      target_commitish,
+      discussion_category_name,
+      generate_release_notes
+    })
+    core.debug(`rel = ${JSON.stringify(rel)}`)
+  } catch (e: Error) {
+    core.setFailed(JSON.stringify(e))
+  }
 
   return rel.data
 }
