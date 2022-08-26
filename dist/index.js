@@ -110,7 +110,8 @@ const release = async (config, github, maxRetries = 3) => {
             release_id
         });
     }
-    catch (Error) {
+    catch (error) {
+        core.error(`${error.status}\n${JSON.stringify(error.response.data.errors)}`);
         core.debug('Creating new release');
     }
     const target_commitish = config.input_target_commitish || '';
@@ -128,26 +129,20 @@ const release = async (config, github, maxRetries = 3) => {
         commitMessage = ` using commit '${target_commitish}'`;
     }
     core.info(`Creating new GitHub release for tag ${tag}${commitMessage}...`);
-    try {
-        const rel = await github.rest.repos.createRelease({
-            owner,
-            repo,
-            tag_name: tag,
-            name,
-            body,
-            draft,
-            prerelease,
-            target_commitish,
-            discussion_category_name,
-            generate_release_notes
-        });
-        core.debug(`rel = ${JSON.stringify(rel)}`);
-        return rel.data;
-    }
-    catch (error) {
-        core.error(error.toString());
-        throw error;
-    }
+    const rel = await github.rest.repos.createRelease({
+        owner,
+        repo,
+        tag_name: tag,
+        name,
+        body,
+        draft,
+        prerelease,
+        target_commitish,
+        discussion_category_name,
+        generate_release_notes
+    });
+    core.debug(`rel = ${JSON.stringify(rel)}`);
+    return rel.data;
 };
 exports.release = release;
 
@@ -242,6 +237,7 @@ async function run() {
         core.setOutput('upload_url', rel.upload_url);
     }
     catch (error) {
+        core.error(`${error.status}\n${JSON.stringify(error.response.data.errors)}`);
         core.setFailed(error.toString());
     }
     return;

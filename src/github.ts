@@ -128,7 +128,7 @@ export const release = async (
       release_id
     })
   } catch (error: any) {
-    core.error(error.toString())
+    core.error(`${error.status}\n${JSON.stringify(error.response.data.errors)}`)
     core.debug('Creating new release')
   }
 
