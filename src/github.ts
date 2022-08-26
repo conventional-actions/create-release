@@ -127,7 +127,8 @@ export const release = async (
       repo,
       release_id
     })
-  } catch (Error) {
+  } catch (error: any) {
+    core.error(error.toString())
     core.debug('Creating new release')
   }
 
@@ -153,24 +154,19 @@ export const release = async (
 
   core.info(`Creating new GitHub release for tag ${tag}${commitMessage}...`)
 
-  try {
-    const rel = await github.rest.repos.createRelease({
-      owner,
-      repo,
-      tag_name: tag,
-      name,
-      body,
-      draft,
-      prerelease,
-      target_commitish,
-      discussion_category_name,
-      generate_release_notes
-    })
-    core.debug(`rel = ${JSON.stringify(rel)}`)
+  const rel = await github.rest.repos.createRelease({
+    owner,
+    repo,
+    tag_name: tag,
+    name,
+    body,
+    draft,
+    prerelease,
+    target_commitish,
+    discussion_category_name,
+    generate_release_notes
+  })
+  core.debug(`rel = ${JSON.stringify(rel)}`)
 
-    return rel.data
-  } catch (error: any) {
-    core.error(error.toString())
-    throw error
-  }
+  return rel.data
 }
