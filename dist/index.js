@@ -101,98 +101,47 @@ const release = async (config, github, maxRetries = 3) => {
             tag
         });
         core.debug(`existingRelease = ${JSON.stringify(existingRelease)}`);
+        core.debug('Deleting existing release');
         const release_id = existingRelease.data.id;
-        core.debug(`release_id = ${release_id}`);
-        let target_commitish;
-        if (config.input_target_commitish &&
-            config.input_target_commitish !== existingRelease.data.target_commitish) {
-            core.info(`Updating commit from '${existingRelease.data.target_commitish}' to '${config.input_target_commitish}'`);
-            target_commitish = config.input_target_commitish;
-        }
-        else {
-            target_commitish = existingRelease.data.target_commitish;
-        }
-        core.debug(`target_commitish = ${target_commitish}`);
-        const tag_name = tag;
-        const name = config.input_name || existingRelease.data.name || tag;
-        // revisit: support a new body-concat-strategy input for accumulating
-        // body parts as a release gets updated. some users will likely want this while
-        // others won't previously this was duplicating content for most which
-        // no one wants
-        const workflowBody = (0, util_1.releaseBody)(config) || '';
-        const existingReleaseBody = existingRelease.data.body || '';
-        let body;
-        if (config.input_append_body && workflowBody && existingReleaseBody) {
-            body = `${existingReleaseBody}\n${workflowBody}`;
-        }
-        else {
-            body = workflowBody || existingReleaseBody;
-        }
-        core.debug(`body = ${body}`);
-        const draft = config.input_draft !== undefined
-            ? config.input_draft
-            : existingRelease.data.draft;
-        const prerelease = config.input_prerelease !== undefined
-            ? config.input_prerelease
-            : existingRelease.data.prerelease;
-        core.debug(`draft = ${draft}`);
-        core.debug(`prerelease = ${prerelease}`);
-        const rel = await github.rest.repos.updateRelease({
+        core.debug(`existing_release_id = ${release_id}`);
+        await github.rest.repos.deleteRelease({
             owner,
             repo,
-            release_id,
-            tag_name,
-            target_commitish,
-            name,
-            body,
-            draft,
-            prerelease,
-            discussion_category_name,
-            generate_release_notes
+            release_id
         });
-        core.debug(`rel = ${JSON.stringify(rel)}`);
-        return rel.data;
     }
-    catch (error) {
-        if (error.status === 404) {
-            core.debug(`not found`);
-            const tag_name = tag;
-            const name = config.input_name || tag;
-            const body = (0, util_1.releaseBody)(config);
-            const draft = config.input_draft;
-            const prerelease = config.input_prerelease;
-            const target_commitish = config.input_target_commitish;
-            let commitMessage = '';
-            if (target_commitish) {
-                commitMessage = ` using commit '${target_commitish}'`;
-            }
-            core.info(`Creating new GitHub release for tag ${tag_name}${commitMessage}...`);
-            try {
-                const rel = await github.rest.repos.createRelease({
-                    owner,
-                    repo,
-                    tag_name,
-                    name,
-                    body,
-                    draft,
-                    prerelease,
-                    target_commitish,
-                    discussion_category_name,
-                    generate_release_notes
-                });
-                core.debug(`rel = ${JSON.stringify(rel)}`);
-                return rel.data;
-            }
-            catch (error2) {
-                // presume a race with competing matrix runs
-                core.warning(`GitHub release failed with status: ${error2.status}\n${JSON.stringify(error.response.data.errors)}\nretrying... (${maxRetries - 1} retries remaining)`);
-                return (0, exports.release)(config, github, maxRetries - 1);
-            }
-        }
-        else {
-            throw error;
-        }
+    catch (Error) {
+        core.debug('Creating new release');
     }
+    const target_commitish = config.input_target_commitish || '';
+    core.debug(`target_commitish = ${target_commitish}`);
+    const name = config.input_name || tag;
+    core.debug(`name = ${name}`);
+    const body = (0, util_1.releaseBody)(config) || '';
+    core.debug(`body = ${body}`);
+    const draft = config.input_draft || false;
+    core.debug(`draft = ${draft}`);
+    const prerelease = config.input_prerelease || false;
+    core.debug(`prerelease = ${prerelease}`);
+    let commitMessage = '';
+    if (target_commitish) {
+        commitMessage = ` using commit '${target_commitish}'`;
+    }
+    core.info(`Creating new GitHub release for tag ${tag}${commitMessage}...`);
+    const rel = await github.rest.repos.createRelease({
+        owner,
+        repo,
+        tag_name: tag,
+        name,
+        body,
+        draft,
+        prerelease,
+        target_commitish,
+        discussion_category_name,
+        generate_release_notes
+    });
+    core.debug(`rel = ${JSON.stringify(rel)}`);
+    return rel.data;
 };
 exports.release = release;
 
