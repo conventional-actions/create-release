@@ -169,8 +169,8 @@ export const release = async (
     core.debug(`rel = ${JSON.stringify(rel)}`)
 
     return rel.data
-  } catch (e) {
-    core.error(JSON.stringify(e))
-    throw e
+  } catch (error: any) {
+    core.error(error.toString())
+    throw error
   }
 }
