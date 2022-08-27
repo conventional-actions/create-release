@@ -100,10 +100,10 @@ export const release = async (
       : '')
   core.debug(`tag = ${tag}`)
 
-  const discussion_category_name = config.input_discussion_category_name
+  const discussion_category_name = config.input_discussion_category_name || ''
   core.debug(`discussion_category_name = ${discussion_category_name}`)
 
-  const generate_release_notes = config.input_generate_release_notes
+  const generate_release_notes = config.input_generate_release_notes || false
   core.debug(`generate_release_notes = ${generate_release_notes}`)
 
   try {
@@ -161,6 +161,9 @@ export const release = async (
 
   core.info(`Creating new GitHub release for tag ${tag}${commitMessage}...`)
 
+  core.debug(
+    `createRequest({${owner}, ${repo}, ${tag}, ${name}, ${body}, ${draft}, ${prerelease}, ${target_commitish}, ${discussion_category_name}, ${generate_release_notes}})`
+  )
   const rel = await repos.createRelease({
     owner,
     repo,

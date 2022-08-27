@@ -88,9 +88,9 @@ const release = async (config, github) => {
             ? config.github_ref.replace('refs/tags/', '')
             : '');
     core.debug(`tag = ${tag}`);
-    const discussion_category_name = config.input_discussion_category_name;
+    const discussion_category_name = config.input_discussion_category_name || '';
     core.debug(`discussion_category_name = ${discussion_category_name}`);
-    const generate_release_notes = config.input_generate_release_notes;
+    const generate_release_notes = config.input_generate_release_notes || false;
     core.debug(`generate_release_notes = ${generate_release_notes}`);
     try {
         const existingRelease = await repos.getReleaseByTag({
@@ -135,6 +135,7 @@ const release = async (config, github) => {
         commitMessage = ` using commit '${target_commitish}'`;
     }
     core.info(`Creating new GitHub release for tag ${tag}${commitMessage}...`);
+    core.debug(`createRequest({${owner}, ${repo}, ${tag}, ${name}, ${body}, ${draft}, ${prerelease}, ${target_commitish}, ${discussion_category_name}, ${generate_release_notes}})`);
     const rel = await repos.createRelease({
         owner,
         repo,
@@ -324,7 +325,7 @@ const parseConfig = (env) => {
         input_fail_on_unmatched_files: env.INPUT_FAIL_ON_UNMATCHED_FILES === 'true',
         input_target_commitish: env.INPUT_TARGET_COMMITISH || undefined,
         input_discussion_category_name: env.INPUT_DISCUSSION_CATEGORY_NAME || undefined,
-        input_generate_release_notes: env.INPUT_GENERATE_RELEASE_NOTES === 'true',
+        input_generate_release_notes: env.INPUT_GENERATE_RELEASE_NOTES !== 'false',
         input_append_body: env.INPUT_APPEND_BODY === 'true'
     };
 };

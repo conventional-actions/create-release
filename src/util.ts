@@ -67,7 +67,7 @@ export const parseConfig = (env: Env): Config => {
     input_target_commitish: env.INPUT_TARGET_COMMITISH || undefined,
     input_discussion_category_name:
       env.INPUT_DISCUSSION_CATEGORY_NAME || undefined,
-    input_generate_release_notes: env.INPUT_GENERATE_RELEASE_NOTES === 'true',
+    input_generate_release_notes: env.INPUT_GENERATE_RELEASE_NOTES !== 'false',
     input_append_body: env.INPUT_APPEND_BODY === 'true'
   }
 }
