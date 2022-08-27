@@ -243,8 +243,9 @@ async function run() {
         core.setOutput('upload_url', rel.upload_url);
     }
     catch (error) {
-        core.error(`${error.status}\n${JSON.stringify(error.response.data.errors)}`);
         core.setFailed(error.toString());
+        core.error(`${error.status}`);
+        core.error(`${JSON.stringify(error.response.data.errors)}`);
     }
     return;
 }
