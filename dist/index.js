@@ -141,11 +141,11 @@ const release = async (config, github) => {
         repo,
         tag_name: tag,
         name,
-        body,
-        draft,
-        prerelease,
-        target_commitish,
-        discussion_category_name,
+        // body,
+        // draft,
+        // prerelease,
+        // target_commitish,
+        // discussion_category_name,
         generate_release_notes
     });
     core.debug(`rel = ${JSON.stringify(rel)}`);
