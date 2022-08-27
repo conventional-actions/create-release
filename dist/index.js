@@ -245,8 +245,6 @@ async function run() {
     }
     catch (error) {
         core.setFailed(error.toString());
-        core.error(`${error.status}`);
-        core.error(`${JSON.stringify(error.response.data.errors)}`);
     }
     return;
 }

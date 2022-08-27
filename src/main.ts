@@ -84,8 +84,6 @@ async function run(): Promise<void> {
     core.setOutput('upload_url', rel.upload_url)
   } catch (error: any) {
     core.setFailed(error.toString())
-    core.error(`${error.status}`)
-    core.error(`${JSON.stringify(error.response.data.errors)}`)
   }
   return
 }
