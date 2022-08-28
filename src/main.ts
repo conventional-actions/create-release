@@ -64,7 +64,7 @@ async function run(): Promise<void> {
         core.debug(
           `artifactPath = ${artifactPath.artifactName}, ${artifactPath.downloadPath}`
         )
-        input_files = input_files.concat(artifactPath.downloadPath)
+        input_files = input_files.concat(artifactPath.artifactName)
       }
     }
 
