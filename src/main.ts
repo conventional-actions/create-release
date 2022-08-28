@@ -59,9 +59,11 @@ async function run(): Promise<void> {
       core.debug(`artifacts = ${artifacts}`)
 
       const artifactPaths = await artifact.create().downloadAllArtifacts()
-      core.debug(`artifactPaths = ${artifactPaths}`)
 
       for (const artifactPath of artifactPaths) {
+        core.debug(
+          `artifactPath = ${artifactPath.artifactName}, ${artifactPath.downloadPath}`
+        )
         input_files = input_files.concat(artifactPath.downloadPath)
       }
     }

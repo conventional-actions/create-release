@@ -230,8 +230,8 @@ async function run() {
             const artifacts = (0, util_1.paths)(config.input_artifacts);
             core.debug(`artifacts = ${artifacts}`);
             const artifactPaths = await artifact.create().downloadAllArtifacts();
-            core.debug(`artifactPaths = ${artifactPaths}`);
             for (const artifactPath of artifactPaths) {
+                core.debug(`artifactPath = ${artifactPath.artifactName}, ${artifactPath.downloadPath}`);
                 input_files = input_files.concat(artifactPath.downloadPath);
             }
         }
