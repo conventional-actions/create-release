@@ -66,7 +66,7 @@ async function run(): Promise<void> {
           `artifactPath = ${artifactPath.artifactName}, ${artifactPath.downloadPath}`
         )
 
-        input_files = input_files.concat(artifactPath.downloadPath)
+        input_files = input_files.concat(`${artifactPath.downloadPath}/*`)
       }
     }
     await exec.exec('ls -laR')
