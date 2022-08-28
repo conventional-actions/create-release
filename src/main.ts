@@ -2,6 +2,7 @@ import {paths, parseConfig, isTag, unmatchedPatterns, uploadUrl} from './util'
 import {release, upload} from './github'
 import * as github from '@actions/github'
 import * as core from '@actions/core'
+import * as artifact from '@actions/artifact'
 
 async function run(): Promise<void> {
   try {
@@ -51,12 +52,26 @@ async function run(): Promise<void> {
     const rel = await release(config, gh)
     core.debug(`rel = ${JSON.stringify(rel)}`)
 
-    if (config.input_files && config.input_files.length > 0) {
-      const files = paths(config.input_files)
+    let input_files = config.input_files || []
+
+    if (config.input_artifacts && config.input_artifacts.length > 0) {
+      const artifacts = paths(config.input_artifacts)
+      core.debug(`artifacts = ${artifacts}`)
+
+      const artifactPaths = await artifact.create().downloadAllArtifacts()
+      core.debug(`artifactPaths = ${artifactPaths}`)
+
+      for (const artifactPath of artifactPaths) {
+        input_files = input_files.concat(artifactPath.downloadPath)
+      }
+    }
+
+    if (input_files.length > 0) {
+      const files = paths(input_files)
       core.debug(`files = ${files}`)
 
       if (files.length === 0) {
-        core.warning(`${config.input_files} not include valid file.`)
+        core.warning(`${input_files} not include valid file.`)
       }
 
       const currentAssets = rel.assets
