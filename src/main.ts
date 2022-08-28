@@ -2,6 +2,7 @@ import {paths, parseConfig, isTag, unmatchedPatterns, uploadUrl} from './util'
 import {release, upload} from './github'
 import * as github from '@actions/github'
 import * as core from '@actions/core'
+import * as exec from '@actions/exec'
 import * as artifact from '@actions/artifact'
 
 async function run(): Promise<void> {
@@ -64,16 +65,18 @@ async function run(): Promise<void> {
         core.debug(
           `artifactPath = ${artifactPath.artifactName}, ${artifactPath.downloadPath}`
         )
-        input_files = input_files.concat(artifactPath.artifactName)
+
+        input_files = input_files.concat(artifactPath.downloadPath)
       }
     }
+    await exec.exec('ls -laR')
 
     if (input_files.length > 0) {
       const files = paths(input_files)
       core.debug(`files = ${files}`)
 
       if (files.length === 0) {
-        core.warning(`${input_files} not include valid file.`)
+        core.warning(`${input_files} did not include any valid files.`)
       }
 
       const currentAssets = rel.assets
