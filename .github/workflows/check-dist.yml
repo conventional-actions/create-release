@@ -44,5 +44,9 @@ jobs:
           name: dist
           path: dist/
 
+env:
+  NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 permissions:
   packages: read
