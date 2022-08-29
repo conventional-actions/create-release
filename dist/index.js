@@ -230,17 +230,23 @@ async function run() {
         const currentAssets = rel.assets;
         core.debug(`currentAssets = ${currentAssets}`);
         if (config.input_artifacts && config.input_artifacts.length > 0) {
-            const artifacts = (0, util_1.paths)(config.input_artifacts);
-            core.debug(`artifacts = ${artifacts}`);
             const artifactPaths = await artifact
                 .create()
                 .downloadAllArtifacts('.build/artifacts');
+            core.debug(`artifactPaths = ${artifactPaths}`);
             for (const artifactPath of artifactPaths) {
                 core.debug(`artifactPath = ${artifactPath.artifactName}, ${artifactPath.downloadPath}`);
-                for (const downloadPath of (0, util_1.paths)([`${artifactPath.downloadPath}/*`])) {
-                    core.debug(`uploading ${downloadPath} to ${artifactPath.artifactName}`);
-                    const uploadedUrl = await (0, github_1.upload)(config, gh, (0, util_1.uploadUrl)(rel.upload_url), downloadPath, currentAssets, artifactPath.artifactName);
-                    core.debug(`uploaded to ${uploadedUrl}`);
+                for (const artifactName of config.input_artifacts) {
+                    if (artifactName === '*' ||
+                        artifactPath.artifactName === artifactName) {
+                        for (const downloadPath of (0, util_1.paths)([
+                            `${artifactPath.downloadPath}/*`
+                        ])) {
+                            core.debug(`uploading ${downloadPath} to ${artifactPath.artifactName}`);
+                            const uploadedUrl = await (0, github_1.upload)(config, gh, (0, util_1.uploadUrl)(rel.upload_url), downloadPath, currentAssets, artifactPath.artifactName);
+                            core.debug(`uploaded to ${uploadedUrl}`);
+                        }
+                    }
                 }
             }
         }

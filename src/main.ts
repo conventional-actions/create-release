@@ -57,32 +57,39 @@ async function run(): Promise<void> {
     core.debug(`currentAssets = ${currentAssets}`)
 
     if (config.input_artifacts && config.input_artifacts.length > 0) {
-      const artifacts = paths(config.input_artifacts)
-      core.debug(`artifacts = ${artifacts}`)
-
       const artifactPaths = await artifact
         .create()
         .downloadAllArtifacts('.build/artifacts')
+      core.debug(`artifactPaths = ${artifactPaths}`)
 
       for (const artifactPath of artifactPaths) {
         core.debug(
           `artifactPath = ${artifactPath.artifactName}, ${artifactPath.downloadPath}`
         )
 
-        for (const downloadPath of paths([`${artifactPath.downloadPath}/*`])) {
-          core.debug(
-            `uploading ${downloadPath} to ${artifactPath.artifactName}`
-          )
+        for (const artifactName of config.input_artifacts) {
+          if (
+            artifactName === '*' ||
+            artifactPath.artifactName === artifactName
+          ) {
+            for (const downloadPath of paths([
+              `${artifactPath.downloadPath}/*`
+            ])) {
+              core.debug(
+                `uploading ${downloadPath} to ${artifactPath.artifactName}`
+              )
 
-          const uploadedUrl = await upload(
-            config,
-            gh,
-            uploadUrl(rel.upload_url),
-            downloadPath,
-            currentAssets,
-            artifactPath.artifactName
-          )
-          core.debug(`uploaded to ${uploadedUrl}`)
+              const uploadedUrl = await upload(
+                config,
+                gh,
+                uploadUrl(rel.upload_url),
+                downloadPath,
+                currentAssets,
+                artifactPath.artifactName
+              )
+              core.debug(`uploaded to ${uploadedUrl}`)
+            }
+          }
         }
       }
     }
