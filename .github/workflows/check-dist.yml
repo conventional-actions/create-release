@@ -43,3 +43,6 @@ jobs:
         with:
           name: dist
           path: dist/
+
+permissions:
+  packages: read

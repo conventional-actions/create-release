@@ -21,3 +21,6 @@ jobs:
           always-auth: true
       - run: npm ci
       - run: npm run all
+
+permissions:
+  packages: read
