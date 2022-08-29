@@ -53,34 +53,42 @@ async function run(): Promise<void> {
     const rel = await release(config, gh)
     core.debug(`rel = ${JSON.stringify(rel)}`)
 
-    let input_files = config.input_files || []
+    const currentAssets = rel.assets
+    core.debug(`currentAssets = ${currentAssets}`)
 
     if (config.input_artifacts && config.input_artifacts.length > 0) {
       const artifacts = paths(config.input_artifacts)
       core.debug(`artifacts = ${artifacts}`)
 
-      const artifactPaths = await artifact.create().downloadAllArtifacts()
+      const artifactPaths = await artifact
+        .create()
+        .downloadAllArtifacts('.build/artifacts')
 
       for (const artifactPath of artifactPaths) {
         core.debug(
           `artifactPath = ${artifactPath.artifactName}, ${artifactPath.downloadPath}`
         )
 
-        input_files = input_files.concat(`${artifactPath.downloadPath}/*`)
+        const uploadedUrl = await upload(
+          config,
+          gh,
+          uploadUrl(rel.upload_url),
+          `${artifactPath.downloadPath}/*`,
+          currentAssets,
+          artifactPath.artifactName
+        )
+        core.debug(`uploaded to ${uploadedUrl}`)
       }
     }
     await exec.exec('ls -laR')
 
-    if (input_files.length > 0) {
-      const files = paths(input_files)
+    if (config.input_files && config.input_files.length > 0) {
+      const files = paths(config.input_files)
       core.debug(`files = ${files}`)
 
       if (files.length === 0) {
-        core.warning(`${input_files} did not include any valid files.`)
+        core.warning(`${config.input_files} did not include any valid files.`)
       }
-
-      const currentAssets = rel.assets
-      core.debug(`currentAssets = ${currentAssets}`)
 
       const assets = await Promise.all(
         files.map(async path => {

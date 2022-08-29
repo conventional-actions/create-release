@@ -46,12 +46,14 @@ export const upload = async (
   github: GitHubT,
   url: string,
   path: string,
-  currentAssets: {id: number; name: string}[]
+  currentAssets: {id: number; name: string}[],
+  overrideName?: string
 ): Promise<string> => {
   const [owner, repo] = config.github_repository.split('/')
   core.debug(`owner = ${owner}, repo = ${repo}`)
 
-  const {name, size, mime, data: body} = asset(path)
+  const {name: assetName, size, mime, data: body} = asset(path)
+  const name = overrideName || assetName
   core.debug(`name = ${name}, size = ${size}, mime = ${mime}, body = ${body}`)
 
   const currentAsset = currentAssets.find(
