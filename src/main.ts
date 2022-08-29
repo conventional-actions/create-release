@@ -69,15 +69,21 @@ async function run(): Promise<void> {
           `artifactPath = ${artifactPath.artifactName}, ${artifactPath.downloadPath}`
         )
 
-        const uploadedUrl = await upload(
-          config,
-          gh,
-          uploadUrl(rel.upload_url),
-          `${artifactPath.downloadPath}/*`,
-          currentAssets,
-          artifactPath.artifactName
-        )
-        core.debug(`uploaded to ${uploadedUrl}`)
+        for (const downloadPath of paths([`${artifactPath.downloadPath}/*`])) {
+          core.debug(
+            `uploading ${downloadPath} to ${artifactPath.artifactName}`
+          )
+
+          const uploadedUrl = await upload(
+            config,
+            gh,
+            uploadUrl(rel.upload_url),
+            downloadPath,
+            currentAssets,
+            artifactPath.artifactName
+          )
+          core.debug(`uploaded to ${uploadedUrl}`)
+        }
       }
     }
     await exec.exec('ls -laR')

@@ -237,8 +237,11 @@ async function run() {
                 .downloadAllArtifacts('.build/artifacts');
             for (const artifactPath of artifactPaths) {
                 core.debug(`artifactPath = ${artifactPath.artifactName}, ${artifactPath.downloadPath}`);
-                const uploadedUrl = await (0, github_1.upload)(config, gh, (0, util_1.uploadUrl)(rel.upload_url), `${artifactPath.downloadPath}/*`, currentAssets, artifactPath.artifactName);
-                core.debug(`uploaded to ${uploadedUrl}`);
+                for (const downloadPath of (0, util_1.paths)([`${artifactPath.downloadPath}/*`])) {
+                    core.debug(`uploading ${downloadPath} to ${artifactPath.artifactName}`);
+                    const uploadedUrl = await (0, github_1.upload)(config, gh, (0, util_1.uploadUrl)(rel.upload_url), downloadPath, currentAssets, artifactPath.artifactName);
+                    core.debug(`uploaded to ${uploadedUrl}`);
+                }
             }
         }
         await exec.exec('ls -laR');
