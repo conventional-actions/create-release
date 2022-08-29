@@ -232,7 +232,9 @@ async function run() {
         if (config.input_artifacts && config.input_artifacts.length > 0) {
             const artifacts = (0, util_1.paths)(config.input_artifacts);
             core.debug(`artifacts = ${artifacts}`);
-            const artifactPaths = await artifact.create().downloadAllArtifacts('.build/artifacts');
+            const artifactPaths = await artifact
+                .create()
+                .downloadAllArtifacts('.build/artifacts');
             for (const artifactPath of artifactPaths) {
                 core.debug(`artifactPath = ${artifactPath.artifactName}, ${artifactPath.downloadPath}`);
                 const uploadedUrl = await (0, github_1.upload)(config, gh, (0, util_1.uploadUrl)(rel.upload_url), `${artifactPath.downloadPath}/*`, currentAssets, artifactPath.artifactName);
