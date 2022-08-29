@@ -1,5 +1,5 @@
-import * as glob from 'glob'
-import {statSync, readFileSync} from 'fs'
+import {readFileSync} from 'fs'
+import {parseMultiInput} from '@conventional-actions/toolkit'
 
 export interface Config {
   github_token: string
@@ -39,17 +39,6 @@ export const releaseBody = (config: Config): string | undefined => {
 
 type Env = {[key: string]: string | undefined}
 
-export const parseInputFiles = (files: string): string[] => {
-  return files.split(/\r?\n/).reduce<string[]>(
-    (acc, line) =>
-      acc
-        .concat(line.split(','))
-        .filter(pat => pat)
-        .map(pat => pat.trim()),
-    []
-  )
-}
-
 export const parseConfig = (env: Env): Config => {
   return {
     github_token: env.INPUT_TOKEN || env.GITHUB_TOKEN || '',
@@ -59,8 +48,8 @@ export const parseConfig = (env: Env): Config => {
     input_tag_name: env.INPUT_TAG_NAME?.trim(),
     input_body: env.INPUT_BODY,
     input_body_path: env.INPUT_BODY_PATH,
-    input_files: parseInputFiles(env.INPUT_FILES || ''),
-    input_artifacts: parseInputFiles(env.INPUT_ARTIFACTS || ''),
+    input_files: parseMultiInput(env.INPUT_FILES || ''),
+    input_artifacts: parseMultiInput(env.INPUT_ARTIFACTS || ''),
     input_draft: env.INPUT_DRAFT ? env.INPUT_DRAFT === 'true' : undefined,
     input_prerelease: env.INPUT_PRERELEASE
       ? env.INPUT_PRERELEASE === 'true'
@@ -72,24 +61,6 @@ export const parseConfig = (env: Env): Config => {
     input_generate_release_notes: env.INPUT_GENERATE_RELEASE_NOTES !== 'false',
     input_append_body: env.INPUT_APPEND_BODY === 'true'
   }
-}
-
-export const paths = (patterns: string[]): string[] => {
-  return patterns.reduce((acc: string[], pattern: string): string[] => {
-    return acc.concat(
-      glob.sync(pattern).filter(path => statSync(path).isFile())
-    )
-  }, [])
-}
-
-export const unmatchedPatterns = (patterns: string[]): string[] => {
-  return patterns.reduce((acc: string[], pattern: string): string[] => {
-    return acc.concat(
-      glob.sync(pattern).filter(path => statSync(path).isFile()).length === 0
-        ? [pattern]
-        : []
-    )
-  }, [])
 }
 
 export const isTag = (ref: string): boolean => {

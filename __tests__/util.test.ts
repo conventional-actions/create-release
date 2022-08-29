@@ -1,12 +1,4 @@
-import {
-  releaseBody,
-  isTag,
-  paths,
-  parseConfig,
-  parseInputFiles,
-  unmatchedPatterns,
-  uploadUrl
-} from '../src/util'
+import {releaseBody, isTag, parseConfig, uploadUrl} from '../src/util'
 import * as assert from 'assert'
 
 describe('util', () => {
@@ -17,20 +9,6 @@ describe('util', () => {
           'https://uploads.github.com/repos/octocat/Hello-World/releases/1/assets{?name,label}'
         ),
         'https://uploads.github.com/repos/octocat/Hello-World/releases/1/assets'
-      )
-    })
-  })
-  describe('parseInputFiles', () => {
-    it('parses empty strings', () => {
-      assert.deepStrictEqual(parseInputFiles(''), [])
-    })
-    it('parses comma-delimited strings', () => {
-      assert.deepStrictEqual(parseInputFiles('foo,bar'), ['foo', 'bar'])
-    })
-    it('parses newline and comma-delimited (and then some)', () => {
-      assert.deepStrictEqual(
-        parseInputFiles('foo,bar\nbaz,boom,\n\ndoom,loom '),
-        ['foo', 'bar', 'baz', 'boom', 'doom', 'loom']
       )
     })
   })
@@ -320,27 +298,6 @@ describe('util', () => {
     })
     it('returns false for other kinds of refs', async () => {
       assert.equal(isTag('refs/heads/master'), false)
-    })
-  })
-
-  describe('paths', () => {
-    it('resolves files given a set of paths', async () => {
-      assert.deepStrictEqual(
-        paths(['__tests__/data/**/*', '__tests__/data/does/not/exist/*']),
-        ['__tests__/data/foo/bar.txt']
-      )
-    })
-  })
-
-  describe('unmatchedPatterns', () => {
-    it("returns the patterns that don't match any files", async () => {
-      assert.deepStrictEqual(
-        unmatchedPatterns([
-          '__tests__/data/**/*',
-          '__tests__/data/does/not/exist/*'
-        ]),
-        ['__tests__/data/does/not/exist/*']
-      )
     })
   })
 })

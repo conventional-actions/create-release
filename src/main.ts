@@ -1,4 +1,5 @@
-import {paths, parseConfig, isTag, unmatchedPatterns, uploadUrl} from './util'
+import {parseConfig, isTag, uploadUrl} from './util'
+import {unmatchedPatterns, paths} from '@conventional-actions/toolkit'
 import {release, upload} from './github'
 import * as github from '@actions/github'
 import * as core from '@actions/core'

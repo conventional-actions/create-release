@@ -187,6 +187,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const util_1 = __nccwpck_require__(4024);
+const toolkit_1 = __nccwpck_require__(2539);
 const github_1 = __nccwpck_require__(5928);
 const github = __importStar(__nccwpck_require__(5438));
 const core = __importStar(__nccwpck_require__(2186));
@@ -201,7 +202,7 @@ async function run() {
             throw new Error(`GitHub Releases requires a tag`);
         }
         if (config.input_files) {
-            const patterns = (0, util_1.unmatchedPatterns)(config.input_files);
+            const patterns = (0, toolkit_1.unmatchedPatterns)(config.input_files);
             core.debug(`patterns = ${patterns}`);
             for (const pattern of patterns) {
                 core.warning(`Pattern '${pattern}' does not match any files.`);
@@ -238,7 +239,7 @@ async function run() {
                 for (const artifactName of config.input_artifacts) {
                     if (artifactName === '*' ||
                         artifactPath.artifactName === artifactName) {
-                        for (const downloadPath of (0, util_1.paths)([
+                        for (const downloadPath of (0, toolkit_1.paths)([
                             `${artifactPath.downloadPath}/*`
                         ])) {
                             core.debug(`uploading ${downloadPath} to ${artifactPath.artifactName}`);
@@ -250,7 +251,7 @@ async function run() {
             }
         }
         if (config.input_files && config.input_files.length > 0) {
-            const files = (0, util_1.paths)(config.input_files);
+            const files = (0, toolkit_1.paths)(config.input_files);
             core.debug(`files = ${files}`);
             if (files.length === 0) {
                 core.warning(`${config.input_files} did not include any valid files.`);
@@ -277,37 +278,14 @@ run();
 /***/ }),
 
 /***/ 4024:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 "use strict";
 
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.isTag = exports.unmatchedPatterns = exports.paths = exports.parseConfig = exports.parseInputFiles = exports.releaseBody = exports.uploadUrl = void 0;
-const glob = __importStar(__nccwpck_require__(1957));
+exports.isTag = exports.parseConfig = exports.releaseBody = exports.uploadUrl = void 0;
 const fs_1 = __nccwpck_require__(7147);
+const toolkit_1 = __nccwpck_require__(2539);
 const uploadUrl = (url) => {
     const templateMarkerPos = url.indexOf('{');
     if (templateMarkerPos > -1) {
@@ -322,13 +300,6 @@ const releaseBody = (config) => {
         config.input_body);
 };
 exports.releaseBody = releaseBody;
-const parseInputFiles = (files) => {
-    return files.split(/\r?\n/).reduce((acc, line) => acc
-        .concat(line.split(','))
-        .filter(pat => pat)
-        .map(pat => pat.trim()), []);
-};
-exports.parseInputFiles = parseInputFiles;
 const parseConfig = (env) => {
     return {
         github_token: env.INPUT_TOKEN || env.GITHUB_TOKEN || '',
@@ -338,8 +309,8 @@ const parseConfig = (env) => {
         input_tag_name: env.INPUT_TAG_NAME?.trim(),
         input_body: env.INPUT_BODY,
         input_body_path: env.INPUT_BODY_PATH,
-        input_files: (0, exports.parseInputFiles)(env.INPUT_FILES || ''),
-        input_artifacts: (0, exports.parseInputFiles)(env.INPUT_ARTIFACTS || ''),
+        input_files: (0, toolkit_1.parseMultiInput)(env.INPUT_FILES || ''),
+        input_artifacts: (0, toolkit_1.parseMultiInput)(env.INPUT_ARTIFACTS || ''),
         input_draft: env.INPUT_DRAFT ? env.INPUT_DRAFT === 'true' : undefined,
         input_prerelease: env.INPUT_PRERELEASE
             ? env.INPUT_PRERELEASE === 'true'
@@ -352,20 +323,6 @@ const parseConfig = (env) => {
     };
 };
 exports.parseConfig = parseConfig;
-const paths = (patterns) => {
-    return patterns.reduce((acc, pattern) => {
-        return acc.concat(glob.sync(pattern).filter(path => (0, fs_1.statSync)(path).isFile()));
-    }, []);
-};
-exports.paths = paths;
-const unmatchedPatterns = (patterns) => {
-    return patterns.reduce((acc, pattern) => {
-        return acc.concat(glob.sync(pattern).filter(path => (0, fs_1.statSync)(path).isFile()).length === 0
-            ? [pattern]
-            : []);
-    }, []);
-};
-exports.unmatchedPatterns = unmatchedPatterns;
 const isTag = (ref) => {
     return ref.startsWith('refs/tags/');
 };
@@ -7259,6 +7216,63 @@ function checkBypass(reqUrl) {
 }
 exports.checkBypass = checkBypass;
 //# sourceMappingURL=proxy.js.map
+
+/***/ }),
+
+/***/ 2539:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.unmatchedPatterns = exports.paths = exports.parseMultiInput = void 0;
+const glob = __importStar(__nccwpck_require__(1957));
+const fs_1 = __nccwpck_require__(7147);
+function parseMultiInput(files) {
+    return files.split(/\r?\n/).reduce((acc, line) => acc
+        .concat(line.split(','))
+        .filter(pat => pat)
+        .map(pat => pat.trim()), []);
+}
+exports.parseMultiInput = parseMultiInput;
+function paths(patterns) {
+    return patterns.reduce((acc, pattern) => {
+        return acc.concat(glob.sync(pattern).filter(path => (0, fs_1.statSync)(path).isFile()));
+    }, []);
+}
+exports.paths = paths;
+function unmatchedPatterns(patterns) {
+    return patterns.reduce((acc, pattern) => {
+        return acc.concat(glob.sync(pattern).filter(path => (0, fs_1.statSync)(path).isFile()).length === 0
+            ? [pattern]
+            : []);
+    }, []);
+}
+exports.unmatchedPatterns = unmatchedPatterns;
+
 
 /***/ }),
 
