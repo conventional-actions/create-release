@@ -2,7 +2,6 @@ import {paths, parseConfig, isTag, unmatchedPatterns, uploadUrl} from './util'
 import {release, upload} from './github'
 import * as github from '@actions/github'
 import * as core from '@actions/core'
-import * as exec from '@actions/exec'
 import * as artifact from '@actions/artifact'
 
 async function run(): Promise<void> {
@@ -93,7 +92,6 @@ async function run(): Promise<void> {
         }
       }
     }
-    await exec.exec('ls -laR')
 
     if (config.input_files && config.input_files.length > 0) {
       const files = paths(config.input_files)
