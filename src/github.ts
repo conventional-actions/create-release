@@ -141,7 +141,9 @@ export const release = async (
     core.debug('Creating new release')
   }
 
-  const target_commitish = config.input_target_commitish || ''
+  const target_commitish =
+    config.input_target_commitish ||
+    config.github_ref.replace('refs/tags/', '').replace('refs/heads/', '')
   core.debug(`target_commitish = ${target_commitish}`)
 
   const name = config.input_name || tag
