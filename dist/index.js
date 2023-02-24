@@ -136,17 +136,16 @@ const release = async (config, github) => {
         commitMessage = ` using commit '${target_commitish}'`;
     }
     core.info(`Creating new GitHub release for tag ${tag}${commitMessage}...`);
-    core.debug(`createRequest({${owner}, ${repo}, ${tag}, ${name}, ${body}, ${draft}, ${prerelease}, ${target_commitish}, ${discussion_category_name}, ${generate_release_notes}})`);
+    core.debug(`createRequest({${owner}, ${repo}, ${tag}, ${name}, ${body}, ${draft}, ${prerelease}, ${target_commitish}, ${generate_release_notes}})`);
     const rel = await repos.createRelease({
         owner,
         repo,
         tag_name: tag,
         name,
-        // body,
-        // draft,
-        // prerelease,
-        // target_commitish,
-        // discussion_category_name,
+        body,
+        draft,
+        prerelease,
+        target_commitish,
         generate_release_notes
     });
     core.debug(`rel = ${JSON.stringify(rel)}`);
