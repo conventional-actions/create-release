@@ -9,12 +9,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
       - id: version
         name: Determine next version
-        uses: conventional-actions/next-version@v1
+        uses: conventional-actions/next-version@e48c1275d221bd29e2c08f8856b91695c0a72db1 # v1.1.6
       - name: Create release
         uses: ./
         with:
