@@ -1,9 +1,11 @@
+import {mkdir} from 'fs/promises'
+import {join} from 'path'
 import {parseConfig, isTag, uploadUrl} from './util'
 import {unmatchedPatterns, paths} from '@conventional-actions/toolkit'
 import {release, upload} from './github'
 import * as github from '@actions/github'
 import * as core from '@actions/core'
-import * as artifact from '@actions/artifact'
+import {DefaultArtifactClient} from '@actions/artifact'
 
 async function run(): Promise<void> {
   try {
@@ -57,10 +59,24 @@ async function run(): Promise<void> {
     core.debug(`currentAssets = ${currentAssets}`)
 
     if (config.input_artifacts && config.input_artifacts.length > 0) {
-      const artifactPaths = await artifact
-        .create()
-        .downloadAllArtifacts('.build/artifacts')
-      core.debug(`artifactPaths = ${artifactPaths}`)
+      const artifactClient = new DefaultArtifactClient()
+      const {artifacts: workflowArtifacts} =
+        await artifactClient.listArtifacts()
+      const artifactsBase = '.build/artifacts'
+      await mkdir(artifactsBase, {recursive: true})
+      const artifactPaths: {artifactName: string; downloadPath: string}[] = []
+      for (const wa of workflowArtifacts) {
+        const dest = join(artifactsBase, wa.name)
+        await mkdir(dest, {recursive: true})
+        const {downloadPath} = await artifactClient.downloadArtifact(wa.id, {
+          path: dest
+        })
+        artifactPaths.push({
+          artifactName: wa.name,
+          downloadPath: downloadPath || dest
+        })
+      }
+      core.debug(`artifactPaths = ${JSON.stringify(artifactPaths)}`)
 
       for (const artifactPath of artifactPaths) {
         core.debug(
