@@ -62,7 +62,7 @@ outputs:
     description: 'JSON array containing information about each uploaded asset, in the format given [here](https://docs.github.com/en/rest/reference/repos#upload-a-release-asset--code-samples) (minus the `uploader` field)'
 runs:
   using: 'node24'
-  main: 'dist/index.js'
+  main: 'dist/index.cjs'
 branding:
   color: 'purple'
   icon: 'package'

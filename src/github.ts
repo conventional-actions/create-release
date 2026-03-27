@@ -1,12 +1,12 @@
 import * as httpClient from '@actions/http-client'
 import {Config, isTag, releaseBody} from './util'
 import {statSync, readFileSync} from 'fs'
-import {getType} from 'mime'
+import mimeTypes from 'mime'
 import {basename} from 'path'
 import * as core from '@actions/core'
-import {GitHub} from '@actions/github/lib/utils'
+import * as github from '@actions/github'
 
-type GitHubT = InstanceType<typeof GitHub>
+type GitHubClient = ReturnType<typeof github.getOctokit>
 
 export interface ReleaseAsset {
   name: string
@@ -38,12 +38,12 @@ export const asset = (path: string): ReleaseAsset => {
 }
 
 export const mimeOrDefault = (path: string): string => {
-  return getType(path) || 'application/octet-stream'
+  return mimeTypes.getType(path) || 'application/octet-stream'
 }
 
 export const upload = async (
   config: Config,
-  github: GitHubT,
+  gh: GitHubClient,
   url: string,
   path: string,
   currentAssets: {id: number; name: string}[],
@@ -63,7 +63,7 @@ export const upload = async (
 
   if (currentAsset) {
     core.info(`Deleting previously uploaded asset ${name}...`)
-    await github.rest.repos.deleteReleaseAsset({
+    await gh.rest.repos.deleteReleaseAsset({
       asset_id: currentAsset.id || 1,
       owner,
       repo
@@ -88,9 +88,9 @@ export const upload = async (
 
 export const release = async (
   config: Config,
-  github: GitHubT
+  gh: GitHubClient
 ): Promise<Release> => {
-  const repos = github.rest.repos
+  const repos = gh.rest.repos
 
   const [owner, repo] = config.github_repository.split('/')
   core.debug(`owner = ${owner}, repo = ${repo}`)
@@ -128,7 +128,7 @@ export const release = async (
     })
 
     core.debug(`deleting ref owner = ${owner}, repo = ${repo}, ref = ${tag}`)
-    await github.rest.git.deleteRef({
+    await gh.rest.git.deleteRef({
       owner,
       repo,
       ref: `tags/${tag}`
