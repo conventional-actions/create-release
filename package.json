@@ -36,9 +36,9 @@
     "@actions/artifact": "^2.3.2",
     "@actions/core": "^1.11.1",
     "@actions/exec": "^1.1.1",
-    "@actions/github": "^6.0.1",
+    "@actions/github": "^9.0.0",
     "@actions/glob": "^0.3.0",
-    "@actions/http-client": "^2.2.3",
+    "@actions/http-client": "^4.0.0",
     "@conventional-actions/toolkit": "^1.1.5",
     "mime": "^3.0.0"
   },
